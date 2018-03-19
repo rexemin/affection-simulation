@@ -16,3 +16,21 @@ These modules require the following dependencies:
 After that is taken care of, you should be good to run the scripts. For now, only `people.py` and `network.py`
 can be run, as they're the only modules with unit tests. When the project is completed, you'll be able to just
 run `main.py` to use everything.
+
+
+### Simulación y visualización de redes sociales de afecto usando igraph y plotly en Python
+
+Software que simula redes sociales de afecto como esas usadas en epidemiología y sociología. Ademásm será capaz de
+generar gráficas visuales a través de plotly.
+
+Este software es hecho como una introducción a la simulación de fenómenos sociales
+
+## Instalación
+Estos módulos requieren las siguientes dependencias:
+- igraph
+- python-igraph
+- numpy
+
+Después de eso, deberías poder ejecutar los scripts. Por ahora¸ solo `people.py` y `network.py`
+pueden ser ejecutados, al ser los únicos con pruebas de unidad. Cuando el proyecto esté completo,
+todo podrá ser usado ejecutando `main.py`.
