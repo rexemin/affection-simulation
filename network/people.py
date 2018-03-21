@@ -3,7 +3,7 @@ This module generates a set of people to be used
 in the module network.py.
 
 Author: Ivan A. Moreno Soto
-Last updated: 17/March/2018
+Last updated: 19/March/2018
 """
 
 ############################################################
@@ -48,6 +48,8 @@ class Person:
         self.name = str(name)
         self.attributes = attrib
         self.exes = set()
+        self.friends = set()
+        self.current_partner = None
 
     def __str__(self):
         """
@@ -56,6 +58,12 @@ class Person:
         """
         attr = ''.join(str(key) + ": " + str(self.attributes[key]) + '\n'
                        for key in sorted(self.attributes.keys()))
+
+        attr += 'Exes:\n'
+        attr += ''.join(name + '\n' for name in self.exes)
+
+        attr += 'Friends:\n'
+        attr += ''.join(name + '\n' for name in self.friends)
 
         return "Name: " + self.name + "\n" + attr
 

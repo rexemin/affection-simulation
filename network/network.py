@@ -2,7 +2,7 @@
 This module simulates an affection social network.
 
 Author: Ivan A. Moreno Soto
-Last updated: 17/March/2018
+Last updated: 20/March/2018
 
 TODO List:
 - Plot network.
@@ -13,9 +13,7 @@ TODO List:
 
 ############################################################
 
-from random import uniform
-from numpy import tanh
-from math import sqrt
+import numpy as np
 
 import igraph
 
@@ -52,35 +50,60 @@ class Network:
         """
         return ''.join('Network with ' + str(len(self.people)) + ' people.\n'
                       + str(len(self.singles)) + ' are single.\n'
-                      + str(len(self.in_relation)) + ' are in relationships.\n'
+                      + str(2*len(self.in_relation)) + ' are in relationships.\n'
                       + str(self.network))
 
 ############################################################
 
-def normalize(v):
+def computeVecMagnitude(v):
     """
-    Returns the normalized vector of v.
+    Returns the magnitude of a vector v.
 
-    @param v: An iterable object of numbers.
+    @param v: Iterable object.
     """
-    norm = sqrt( sum( [x**2 for x in v] ) )
-    return [x/norm for x in v]
+    return np.sqrt( sum( np.power(v, [2 for x in v]) ) )
 
 ############################################################
 
-def dist(a, b):
+def computeDotProduct(v, u):
     """
-    Computes the distance between two Persons. Automatically
-    normalizes the vector of each Person.
+    Returns the dot product of two vectors v and u.
 
-    @param a: A Person object.
-    @param b: A Person object.
+    @param v: Iterable object.
+    @param u: Iterable object.
     """
-    vec_a = normalize(people.attrib2vec(a))
-    vec_b = normalize(people.attrib2vec(b))
+    return sum( [x * y for (x, y) in zip(v, u)] )
 
-    distance = sqrt( sum( [(at_a - at_b)**2 for at_a, at_b in zip(vec_a, vec_b)] ) )
-    return distance
+############################################################
+
+def computeAngleBtwnPeople(a, b):
+    """
+    Returns the angle between two people's attributes vector.
+
+    @param a: Person object.
+    @param b: Person object.
+    """
+    va = people.attrib2vec(a)
+    vb = people.attrib2vec(b)
+
+    return np.arccos( computeDotProduct(va, vb) /
+                      (computeVecMagnitude(va) * computeVecMagnitude(vb)) )
+
+############################################################
+
+def alreadyInRelation(pos_partner, in_relation):
+    """
+    Returns wheter or not the possible partner is already in
+    a relationship.
+
+    @param pos_partner: Index of a possible partner.
+    @param in_relation: Set of current couples in a network.
+    """
+    for couple in in_relation:
+        if pos_partner in couple:
+            return True
+
+    return False
 
 ############################################################
 
@@ -91,18 +114,73 @@ def computeRomanticRelationships(network):
 
     @param network: Network where the relationships will be computed.
     """
+    n = network
     for person in network.singles:
-        for pos_partner in network.singles[network.singles.index(person)+1:]:
-            if person not in network.in_relation and pos_partner not in network.in_relation and dist(network.people[person], network.people[pos_partner]) <= uniform(0, 0.3):
-                network.in_relation.append(person)
-                network.in_relation.append(pos_partner)
+        # First, we skip this person if its already in a relationship.
+        if alreadyInRelation(person, n.in_relation):
+            continue
+
+        for pos_partner in n.singles[n.singles.index(person)+1:]:
+            # We skip this person if its already in a relationship.
+            if alreadyInRelation(pos_partner, n.in_relation):
+                continue
+
+            # We skip if we they have incompatible orientations.
+            if n.people[person].attributes['orientation'] + n.people[pos_partner].attributes['orientation'] == 0:
+                continue
+
+            # We skip if we have a heterosexual men or a woman with another
+            # person of the same sex, and viceversa.
+            if n.people[person].attributes['orientation'] == -1:
+                if n.people[person].attributes['sex'] == n.people[pos_partner].attributes['sex']:
+                    continue
+            elif n.people[person].attributes['orientation'] == 1:
+                if n.people[person].attributes['sex'] != n.people[pos_partner].attributes['sex']:
+                    continue
+
+            if n.people[pos_partner].attributes['orientation'] == -1:
+                if n.people[person].attributes['sex'] == n.people[pos_partner].attributes['sex']:
+                    continue
+            elif n.people[pos_partner].attributes['orientation'] == 1:
+                if n.people[person].attributes['sex'] != n.people[pos_partner].attributes['sex']:
+                    continue
+
+            prob = 1 # At the start, it's a given that they'll date.
+
+            # We adjust the probability if they're friends, exes, or if they
+            # complete a cycle of lenght 4.
+            if n.people[pos_partner] in n.people[person].friends:
+                prob -= 0.5
+            if n.people[pos_partner] in n.people[person].exes:
+                prob -= 0.5
+            for ex in n.people[person].exes:
+                if ex.current_partner is not None and n.people[pos_partner] in ex.current_partner.exes:
+                    prob -= 0.7
+
+            angle_btwn = computeAngleBtwnPeople(n.people[person], n.people[pos_partner])
+
+            if angle_btwn > 0 and angle_btwn <= np.pi/4:
+                prob -= 0.3
+            elif angle_btwn > np.pi/4 and angle_btwn <= np.pi/2:
+                prob -= 0.5
+            elif angle_btwn > np.pi/2 and angle_btwn <= 3*np.pi/4:
+                prob -= 0.7
+            elif angle_btwn > 3*np.pi/4:
+                prob -= 0.9
+
+            if np.random.random() <= prob:
+                network.in_relation.append((person, pos_partner))
+                n.people[person].current_partner = n.people[pos_partner]
+                n.people[pos_partner].current_partner = n.people[person]
                 network.network.add_edges([(person, pos_partner)])
                 break
 
     # Before returning, we update the singles' list.
-    for person in network.in_relation:
-        if person in network.singles:
-            del network.singles[network.singles.index(person)]
+    for (person1, person2) in network.in_relation:
+        if person1 in network.singles:
+            del network.singles[network.singles.index(person1)]
+        if person2 in network.singles:
+            del network.singles[network.singles.index(person2)]
 
 ############################################################
 
@@ -113,9 +191,23 @@ def computeBreakups():
 
 ############################################################
 
+def computeFriendships():
+    """
+    """
+    pass
+
+############################################################
+
+def computeEndingFriend():
+    """
+    """
+    pass
+
+############################################################
+
 if __name__ == "__main__":
     """
-    Tests the things defines in this module.
+    Tests the things defined in this module.
     """
     society = people.createPopulation('./names.txt', 100)
     network = Network(society)
@@ -124,7 +216,7 @@ if __name__ == "__main__":
     computeRomanticRelationships(network)
     print(network)
 
-    #for p in network.people:
-    #    print(p)
+    for p in network.people:
+        print(p)
 
 ###### EOF: network.py #####################################
