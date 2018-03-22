@@ -2,7 +2,7 @@
 This module simulates an affection social network.
 
 Author: Ivan A. Moreno Soto
-Last updated: 20/March/2018
+Last updated: 21/March/2018
 
 TODO List:
 - Plot network.
@@ -16,6 +16,8 @@ TODO List:
 import numpy as np
 
 import igraph
+import plotly.plotly as py
+from plotly.graph_objs import *
 
 import people
 
@@ -148,7 +150,7 @@ def computeRomanticRelationships(network):
             prob = 1 # At the start, it's a given that they'll date.
 
             # We adjust the probability if they're friends, exes, or if they
-            # complete a cycle of lenght 4.
+            # complete a cycle of length 4.
             if n.people[pos_partner] in n.people[person].friends:
                 prob -= 0.5
             if n.people[pos_partner] in n.people[person].exes:
@@ -173,6 +175,7 @@ def computeRomanticRelationships(network):
                 n.people[person].current_partner = n.people[pos_partner]
                 n.people[pos_partner].current_partner = n.people[person]
                 network.network.add_edges([(person, pos_partner)])
+                # Add attribute to the edge!
                 break
 
     # Before returning, we update the singles' list.
@@ -184,10 +187,39 @@ def computeRomanticRelationships(network):
 
 ############################################################
 
-def computeBreakups():
+def computeBreakups(network):
     """
+    Computes the relationships that get broken up.
+
+    @network: Network where the people are.
     """
-    pass
+    for couple in network.in_relation:
+        prob = 0.95
+
+        p, q = network.people[couple[0]], network.people[couple[1]]
+        angle_btwn = computeAngleBtwnPeople(p, q)
+
+        if angle_btwn > 0 and angle_btwn <= np.pi/4:
+            prob -= 0.3
+        elif angle_btwn > np.pi/4 and angle_btwn <= np.pi/2:
+            prob -= 0.5
+        elif angle_btwn > np.pi/2 and angle_btwn <= 3*np.pi/4:
+            prob -= 0.7
+        elif angle_btwn > 3*np.pi/4:
+            prob -= 0.9
+
+        if np.random.random() <= prob:
+            del network.in_relation[network.in_relation.index(couple)]
+
+            p.current_partner = None
+            q.current_partner = None
+
+            network.singles.append(couple[0])
+            network.singles.append(couple[1])
+
+            p.exes.add(q)
+            q.exes.add(p)
+            # Change attribute of the edge!
 
 ############################################################
 
@@ -211,12 +243,18 @@ if __name__ == "__main__":
     """
     society = people.createPopulation('./names.txt', 100)
     network = Network(society)
+
+    print("Network without relations.")
     print(network)
 
+    print("First generation of relations.")
     computeRomanticRelationships(network)
     print(network)
 
-    for p in network.people:
-        print(p)
+    #for p in network.people:
+    #    print(p)
 
+    computeBreakups(network)
+    print("First generation of breakups.")
+    print(network)
 ###### EOF: network.py #####################################
