@@ -12,6 +12,7 @@ These modules require the following dependencies:
 - igraph
 - python-igraph
 - numpy
+- plotly
 
 After that is taken care of, you should be good to run the scripts. For now, only `people.py` and `network.py`
 can be run, as they're the only modules with unit tests. When the project is completed, you'll be able to just
@@ -30,6 +31,7 @@ Estos módulos requieren las siguientes dependencias:
 - igraph
 - python-igraph
 - numpy
+- plotly
 
 Después de eso, deberías poder ejecutar los scripts. Por ahora¸ solo `people.py` y `network.py`
 pueden ser ejecutados, al ser los únicos con pruebas de unidad. Cuando el proyecto esté completo,
