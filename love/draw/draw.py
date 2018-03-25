@@ -29,10 +29,10 @@ def plotNetwork(network, plot_title):
     @param network: An igraph graph.
     @param plot_title: Title of the plot (so, a string, obviously.)
     """
-    labels = [person.name for person in network.network.vs['info']]
+    labels = [person.name for person in network.graph.vs['info']]
     num_labels = len(labels)
-    edges = [e.tuple for e in network.network.es]
-    layout = network.network.layout('kk') # Kamada-Kawai layout.
+    edges = [e.tuple for e in network.graph.es]
+    layout = network.graph.layout('kk') # Kamada-Kawai layout.
 
     # We get the nodes and edges in a way plotly can work the coordinates of them.
     Xn = [layout[k][0] for k in range(num_labels)]

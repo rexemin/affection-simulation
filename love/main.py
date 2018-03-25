@@ -25,13 +25,13 @@ network = nw.Network(society)
 print("Network without relations.")
 print(network)
 
-for generation in range(6):
+for generation in range(15):
     nw.computeRomanticRelationships(network)
     nw.computeBreakups(network)
     
-print("Network after 6 generations")
+print("Network after 15 generations")
 print(network)
-draw.plotNetwork(network, 'Network after six generations of relationships')
+draw.plotNetwork(network, 'Network after 15 generations of relationships')
 
 #-----------------------------------------------------------#
 
