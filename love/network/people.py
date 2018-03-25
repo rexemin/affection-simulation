@@ -1,17 +1,19 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 This module generates a set of people to be used
 in the module network.py.
 
 Author: Ivan A. Moreno Soto
-Last updated: 22/March/2018
+Last updated: 25/March/2018
 """
 
-############################################################
+#-----------------------------------------------------------#
 
 from random import sample
 from random import randint as ri
 
-############################################################
+#-----------------------------------------------------------#
 
 """
 Global dictionaries for indicating parameters used to create people.
@@ -26,7 +28,7 @@ active_attr = {'sex':{0:'M', 1:'F'},
               'hobby':{i:i for i in range(-10, 11)},
               'personality':{i:i for i in range(-2, 3)}}
 
-############################################################
+#-----------------------------------------------------------#
 
 class Person:
     """
@@ -63,8 +65,7 @@ class Person:
 
         return "Name: " + self.name + "\n" + attr
 
-
-############################################################
+#-----------------------------------------------------------#
 
 def attrib2vec(person):
     """
@@ -78,7 +79,7 @@ def attrib2vec(person):
 
     return [person.attributes[key] for key in sorted(person.attributes.keys())]
 
-############################################################
+#-----------------------------------------------------------#
 
 def readSample(file_path, size):
     """
@@ -97,7 +98,7 @@ def readSample(file_path, size):
         names = [tuple(row.split()) for row in database_sample]
     return names
 
-############################################################
+#-----------------------------------------------------------#
 
 def makeAttributes(names):
     """
@@ -133,7 +134,7 @@ def makeAttributes(names):
                           'hobby':ri(-10, 10),
                           'personality':ri(-2, 2)}) for (name, sex) in names]
 
-############################################################
+#-----------------------------------------------------------#
 
 def createPopulation(file_path, size):
     """
@@ -147,15 +148,6 @@ def createPopulation(file_path, size):
     population = makeAttributes(names)
     return population
 
-############################################################
+#-----------------------------------------------------------#
 
-if __name__ == "__main__":
-    """
-    Tests the things defined on this module.
-    """
-
-    pop = createPopulation('./names.txt', 100)
-    for p in pop:
-        print(p)
-
-###### EOF: people.py ######################################
+###### EOF: people.py #######################################

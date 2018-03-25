@@ -1,27 +1,26 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 This module simulates an affection social network.
 
 Author: Ivan A. Moreno Soto
-Last updated: 22/March/2018
+Last updated: 25/March/2018
 
 TODO List:
-- Plot network.
-- Compute relationships that stay and that get broken up.
-- Recompute formation of relationships.
-- Plot network.
+- Refactor a bunch of things from computeRelationships.
+- Add attribute to the edges.
 """
 
-############################################################
+#-----------------------------------------------------------#
 
 import numpy as np
+from random import sample
 
 import igraph
-import plotly.plotly as py
-from plotly.graph_objs import *
 
-import people
+import network.people as people
 
-############################################################
+#-----------------------------------------------------------#
 
 class Network:
     """
@@ -55,7 +54,7 @@ class Network:
                       + str(2*len(self.in_relation)) + ' are in relationships.\n'
                       + str(self.network))
 
-############################################################
+#-----------------------------------------------------------#
 
 def computeVecMagnitude(v):
     """
@@ -65,7 +64,7 @@ def computeVecMagnitude(v):
     """
     return np.sqrt( sum( np.power(v, [2 for x in v]) ) )
 
-############################################################
+#-----------------------------------------------------------#
 
 def computeDotProduct(v, u):
     """
@@ -76,7 +75,7 @@ def computeDotProduct(v, u):
     """
     return sum( [x * y for (x, y) in zip(v, u)] )
 
-############################################################
+#-----------------------------------------------------------#
 
 def computeAngleBtwnPeople(a, b):
     """
@@ -91,7 +90,7 @@ def computeAngleBtwnPeople(a, b):
     return np.arccos( computeDotProduct(va, vb) /
                       (computeVecMagnitude(va) * computeVecMagnitude(vb)) )
 
-############################################################
+#-----------------------------------------------------------#
 
 def alreadyInRelation(pos_partner, in_relation):
     """
@@ -107,7 +106,7 @@ def alreadyInRelation(pos_partner, in_relation):
 
     return False
 
-############################################################
+#-----------------------------------------------------------#
 
 def computeRomanticRelationships(network):
     """
@@ -117,12 +116,16 @@ def computeRomanticRelationships(network):
     @param network: Network where the relationships will be computed.
     """
     n = network
-    for person in network.singles:
+
+    # To avoid making too many couples we just take a random sample from
+    # the pool of single people.
+    for person in sample(network.singles, 50):
         # First, we skip this person if its already in a relationship.
         if alreadyInRelation(person, n.in_relation):
             continue
 
-        for pos_partner in n.singles[n.singles.index(person)+1:]:
+        # Now, we suppose that a single will know only a tiny part of the community.
+        for pos_partner in sample(n.singles, 10):
             # We skip this person if its already in a relationship.
             if alreadyInRelation(pos_partner, n.in_relation):
                 continue
@@ -152,19 +155,19 @@ def computeRomanticRelationships(network):
             # We adjust the probability if they're exes, or if they
             # complete a cycle of length 4.
             if n.people[pos_partner] in n.people[person].exes:
-                prob -= 0.5
+                prob -= 0.7
             for ex in n.people[person].exes:
                 if ex.current_partner is not None and n.people[pos_partner] in ex.current_partner.exes:
-                    prob -= 0.7
+                    prob -= 0.85
 
             angle_btwn = computeAngleBtwnPeople(n.people[person], n.people[pos_partner])
 
             if angle_btwn > 0 and angle_btwn <= np.pi/4:
-                prob -= 0.3
+                prob -= 0.4
             elif angle_btwn > np.pi/4 and angle_btwn <= np.pi/2:
-                prob -= 0.5
+                prob -= 0.6
             elif angle_btwn > np.pi/2 and angle_btwn <= 3*np.pi/4:
-                prob -= 0.7
+                prob -= 0.8
             elif angle_btwn > 3*np.pi/4:
                 prob -= 0.9
 
@@ -183,7 +186,7 @@ def computeRomanticRelationships(network):
         if person2 in network.singles:
             del network.singles[network.singles.index(person2)]
 
-############################################################
+#-----------------------------------------------------------#
 
 def computeBreakups(network):
     """
@@ -219,26 +222,6 @@ def computeBreakups(network):
             q.exes.add(p)
             # Change attribute of the edge!
 
-############################################################
+#-----------------------------------------------------------#
 
-if __name__ == "__main__":
-    """
-    Tests the things defined in this module.
-    """
-    society = people.createPopulation('./names.txt', 100)
-    network = Network(society)
-
-    print("Network without relations.")
-    print(network)
-
-    print("First generation of relations.")
-    computeRomanticRelationships(network)
-    print(network)
-
-    #for p in network.people:
-    #    print(p)
-
-    computeBreakups(network)
-    print("First generation of breakups.")
-    print(network)
-###### EOF: network.py #####################################
+###### EOF: network.py ######################################
