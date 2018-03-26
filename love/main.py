@@ -42,6 +42,7 @@ for generation in range(1, generations+1):
     
 print("Final network after " + str(generations) +  " generations.")
 print(network)
+print(len(network.in_relation))
 draw.plotNetwork(network, "Final network after " + str(generations) + " generations of relationships")
 
 #-----------------------------------------------------------#
