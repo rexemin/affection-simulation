@@ -5,7 +5,7 @@ This module implements everything needed for plotting
 of a social network.
 
 Author: Ivan A. Moreno Soto
-Last updated: 25/March/2018
+Last updated: 26/March/2018
 """
 
 #-----------------------------------------------------------#
@@ -40,6 +40,57 @@ def makeLabels(network):
 
 #-----------------------------------------------------------#
 
+def getNodesCoordinates(network, layout):
+    """
+    Returns the coordinates for male and female nodes of a social
+    network.
+
+    @param network: Social network.
+    @param layout: A graph layout from igraph.
+    """
+    coord_male = [[], []]
+    coord_fem = [[], []]
+
+    for v in network.people:
+        k = network.people.index(v)
+        
+        if v.attributes['sex'] == 0:
+            coord_male[0].append(layout[k][0])
+            coord_male[1].append(layout[k][1])
+        else:
+            coord_fem[0].append(layout[k][0])
+            coord_fem[1].append(layout[k][1])
+
+    return coord_male, coord_fem
+
+#-----------------------------------------------------------#
+
+def getEdgesCoordinates(network, layout):
+    """
+    Returns the coordinates for current and past relationships
+    edges of a social network.
+
+    @param network: Social network.
+    @param layout: A graph layout from igraph.
+    """
+    coord_current = [[], []]
+    coord_past = [[], []]
+
+    # We get the starting and ending points of every edge.
+    for e in network.graph.es:
+        e_v = e.tuple
+
+        if e['current'] == True:
+            coord_current[0] += [layout[e_v[0]][0], layout[e_v[1]][0], None]
+            coord_current[1] += [layout[e_v[0]][1], layout[e_v[1]][1], None]
+        else:
+            coord_past[0] += [layout[e_v[0]][0], layout[e_v[1]][0], None]
+            coord_past[1] += [layout[e_v[0]][1], layout[e_v[1]][1], None]
+
+    return coord_current, coord_past
+
+#-----------------------------------------------------------#
+
 def plotNetwork(network, plot_title, width = 800, height = 800):
     """
     Plots a 2D graph of the contents of network using plotly.
@@ -56,49 +107,28 @@ def plotNetwork(network, plot_title, width = 800, height = 800):
     layout = network.graph.layout('kk') # Kamada-Kawai layout.
 
     # We get the nodes and edges in a way plotly can work the coordinates of them.
-    coord_male = [[], []]
-    coord_fem = [[], []]
+    coord_male, coord_fem = getNodesCoordinates(network, layout)
+    coord_current, coord_past = getEdgesCoordinates(network, layout)
 
-    for v in network.people:
-        k = network.people.index(v)
-        
-        if v.attributes['sex'] == 0:
-            coord_male[0].append(layout[k][0])
-            coord_male[1].append(layout[k][1])
-        else:
-            coord_fem[0].append(layout[k][0])
-            coord_fem[1].append(layout[k][1])
-
-    coord_current = [[], []]
-    coord_past = [[], []]
-
-    # We get the starting and ending points of every edge.
-    for e in network.graph.es:
-        e_v = e.tuple
-
-        if e['current'] == True:
-            coord_current[0] += [layout[e_v[0]][0], layout[e_v[1]][0], None]
-            coord_current[1] += [layout[e_v[0]][1], layout[e_v[1]][1], None]
-        else:
-            coord_past[0] += [layout[e_v[0]][0], layout[e_v[1]][0], None]
-            coord_past[1] += [layout[e_v[0]][1], layout[e_v[1]][1], None]
 
     # We make all the data we need to plot the edges and nodes.
     current_edges_trace = Scatter(x = coord_current[0], y = coord_current[1],
-                               mode = 'lines',
-                               line = Line(color='rgb(30, 144, 255)', width = 1),
-                               hoverinfo = 'none')
+                                  mode = 'lines',
+                                  name = 'Current',
+                                  line = Line(color='rgb(30, 144, 255)', width = 1),
+                                  hoverinfo = 'none')
 
-    # We paint past relationships black.
+    # We paint past relationships gray.
     past_edges_trace = Scatter(x = coord_past[0], y = coord_past[1],
                                mode = 'lines',
-                               line = Line(color='rgb(0, 0, 0)', width = 1),
+                               name = 'Past',
+                               line = Line(color='rgb(170, 170, 170)', width = 1),
                                hoverinfo = 'none')
 
     # Male nodes are purple.
     male_nodes_trace = Scatter(x = coord_male[0], y = coord_male[1],
                                mode = 'markers',
-                               name = 'ntw',
+                               name = 'Male',
                                marker = Marker(symbol = 'dot', size = 5, color = '#9400D3',
                                                line = Line(color = 'rgb(75, 0, 130)', width = 0.5)),
                                text = labels[0],
@@ -107,7 +137,7 @@ def plotNetwork(network, plot_title, width = 800, height = 800):
     # Female nodes are orange.
     fem_nodes_trace = Scatter(x = coord_fem[0], y = coord_fem[1],
                                mode = 'markers',
-                               name = 'ntw',
+                               name = 'Female',
                                marker = Marker(symbol = 'dot', size = 5, color = '#FFA500',
                                                line = Line(color = 'rgb(255, 140, 0)', width = 0.5)),
                                text = labels[1],
@@ -123,7 +153,7 @@ def plotNetwork(network, plot_title, width = 800, height = 800):
     # Characteristics of the plot.
     plot_layout = Layout(title = plot_title,
                     font = Font(size = 14),
-                    showlegend = False,
+                    showlegend = True,
                     autosize = False,
                     width = width, height = height,
                     xaxis = XAxis(axis), yaxis = YAxis(axis),
