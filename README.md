@@ -14,10 +14,10 @@ These modules require the following dependencies:
 - numpy
 - plotly
 
-After that is taken care of, you should be good to run the scripts. For now, only `people.py` and `network.py`
-can be run, as they're the only modules with unit tests. When the project is completed, you'll be able to just
-run `main.py` to use everything.
+After that is taken care of, you should be good to run the scripts. For now, only the `love` package is complete.
 
+## Run
+Run the `main.py` script inside the `love` package to run the simulation.
 
 ### Simulación y visualización de redes sociales de afecto usando igraph y plotly en Python
 
@@ -33,6 +33,7 @@ Estos módulos requieren las siguientes dependencias:
 - numpy
 - plotly
 
-Después de eso, deberías poder ejecutar los scripts. Por ahora¸ solo `people.py` y `network.py`
-pueden ser ejecutados, al ser los únicos con pruebas de unidad. Cuando el proyecto esté completo,
-todo podrá ser usado ejecutando `main.py`.
+Después de eso, deberías poder ejecutar los scripts. Por ahora¸ solo el paquete `love` esta completo.
+
+## Ejecución
+Corre el script `main.py` dentro del paquete `love` para ejecutar la simulación.
