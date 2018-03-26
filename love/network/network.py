@@ -51,7 +51,7 @@ class Network:
         return ''.join('Network with ' + str(len(self.people)) + ' people.\n'
                       + str(len(self.singles)) + ' are single.\n'
                       + str(2*len(self.in_relation)) + ' are in relationships.\n'
-                      + str(self.graph))
+                      + str(self.graph.summary()))
 
 #-----------------------------------------------------------#
 
