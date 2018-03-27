@@ -278,7 +278,6 @@ def computeBreakups(network):
 
     @network: Network where the people are.
     """
-    breaks = 0
     for couple in network.in_relation:
         break_prob = 0.95
 
@@ -296,8 +295,6 @@ def computeBreakups(network):
 
         if np.random.random() <= break_prob:
             deleteRelationship(network, couple)
-            breaks += 1
-    print('number of breakups: ' + str(breaks))
 
 #-----------------------------------------------------------#
 
