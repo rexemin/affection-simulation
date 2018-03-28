@@ -5,9 +5,6 @@ This module simulates an affection social network.
 
 Author: Ivan A. Moreno Soto
 Last updated: 27/March/2018
-
-TODO:
-- Make computeFriendships take into account friends of friends.
 """
 
 #-----------------------------------------------------------#
@@ -304,16 +301,42 @@ def computeBreakups(network):
                 p.friends.remove(q)
                 q.friends.remove(p)
                 
-#-----------------------------------------------------------#
+#----------------------------------------------------------------------------------#
+## FRIENDSHIP FUNCTIONS
+#----------------------------------------------------------------------------------#
 
-def computeFriendships(network, sample_size = 70, pos_size = 8):
+def makeFriendship(network, p, q):
     """
-    Decides what friendships get made and adds the respective edges
-    to the network.
+    Creates an edge between p and q, and puts each other in
+    their friends set.
 
     @param network: Network object.
-    @param sample_size: Number of people that'll get selected to make friends.
-    @param pos_size: Number of possible friends for a person.
+    @param p: Person object.
+    @param q: Person object.
+    """
+    p.friends.add(q)
+    q.friends.add(p)
+    
+    p_position = network.people.index(p)
+    q_position = network.people.index(q)
+    
+    network.graph.add_edges([(p_position, q_position)])
+    
+    # We get the id of the edge we just added and specify that it's
+    # a friendly relationship.
+    edge_id = network.graph.get_eid(p_position, q_position)
+    network.graph.es[edge_id]['romantic'] = False
+
+#-----------------------------------------------------------#
+
+def computePairsFriend(network, sample_size, pos_size):
+    """
+    Computes pairs of friends that'll be the foundation
+    for the rest of the friendships in the network.
+
+    @param network: Network object.
+    @param sample_size: Size of the sample of outgoing people.
+    @param pos_size: Size of possible friends for a friend.
     """
     if len(network.people) < sample_size:
         sample_size = len(network.people)
@@ -321,9 +344,13 @@ def computeFriendships(network, sample_size = 70, pos_size = 8):
         pos_size = len(network.people)
 
     for person in sample(network.people, sample_size):
+        if person.friends: continue
+
         for pos_friend in sample(network.people, pos_size):
+            if pos_friend.friends: continue
+
             if person == pos_friend: continue
-            if person in pos_friend.friends: continue
+            if person in pos_friend.friends: break
             if person.current_partner == pos_friend: continue
             
             prob = 1 # At the start, it's a given that they'll be friends.
@@ -345,18 +372,74 @@ def computeFriendships(network, sample_size = 70, pos_size = 8):
                 prob -= 0.9
 
             if np.random.random() <= prob:
-                person.friends.add(pos_friend)
-                pos_friend.friends.add(person)
+                makeFriendship(network, person, pos_friend)
+                break
 
-                p_position = network.people.index(person)
-                q_position = network.people.index(pos_friend)
 
-                network.graph.add_edges([(p_position, q_position)])
-                
-                # We get the id of the edge we just added and specify that it's
-                # a friendly relationship.
-                edge_id = network.graph.get_eid(p_position, q_position)
-                network.graph.es[edge_id]['romantic'] = False
+#-----------------------------------------------------------#
+
+def computeFriendGroups(network, sample_size, pos_size, friend_limit = 6):
+    """
+    Computes whether or not a person from a sample of a network
+    joins a friendgroup.
+
+    @param network: Network object.
+    @param sample_size: Size of the sample of outgoing people.
+    @param pos_size: Size of possible friends for a friend.
+    @param friend_limit: Limits of friends a person can have.
+    """
+    if len(network.people) < sample_size:
+        sample_size = len(network.people)
+
+    for person in sample(network.people, sample_size):
+        if len(person.friends) >= friend_limit: continue
+        
+        for pos_friend in sample(network.people, pos_size):
+            if len(pos_friend.friends) >= friend_limit: continue
+        
+            if person == pos_friend: continue
+            if person in pos_friend.friends: break
+            if person.current_partner == pos_friend: continue
+            
+            prob = 1 # At the start, it's a given that they'll be friends.
+
+            # We adjust the probability if they're friends, exes, or if they
+            # complete a cycle of length 4.
+            if pos_friend in person.exes:
+                prob -= 0.9
+
+            angle_btwn = computeAngleBtwnPeople(person, pos_friend)
+
+            if angle_btwn > 0 and angle_btwn <= np.pi/4:
+                prob -= 0.3
+            elif angle_btwn > np.pi/4 and angle_btwn <= np.pi/2:
+                prob -= 0.6
+            elif angle_btwn > np.pi/2 and angle_btwn <= 3*np.pi/4:
+                prob -= 0.8
+            elif angle_btwn > 3*np.pi/4:
+                prob -= 0.9
+
+            if np.random.random() <= prob:
+                makeFriendship(network, person, pos_friend)
+
+                # Now, person joins the friendgroup of their new friend.
+                for friend in pos_friend.friends:
+                    makeFriendship(network, person, friend)
+                break
+
+#-----------------------------------------------------------#
+
+def computeFriendships(network, sample_size = 70, pos_size = 8):
+    """
+    Decides what friendships get made and adds the respective edges
+    to the network.
+
+    @param network: Network object.
+    @param sample_size: Number of people that'll get selected to make friends.
+    @param pos_size: Number of possible friends for a person.
+    """
+    computePairsFriend(network, sample_size, pos_size)
+    computeFriendGroups(network, sample_size, pos_size)
 
 #-----------------------------------------------------------#
 

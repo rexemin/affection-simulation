@@ -32,7 +32,7 @@ print(network)
 for generation in range(1, generations+1):
     nw.computeRomanticRelationships(network)
 
-    if generation % step == 0:
+    if generation % step == 0 and generation != generations:
         print("\nNetwork after " + str(generation) +  " generations.")
         print(network)
         draw.plotNetwork(network, "Network after " + str(generation) + " generations of relationships")

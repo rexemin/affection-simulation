@@ -29,11 +29,15 @@ step = int(input("After how many generations do you want to see the plots of the
 print("Network without relations.")
 print(network)
 
-nw.computeFriendships(network)
+nw.computeFriendships(network, sample_size = 20)
+print("Network with only friendships.")
+print(network)
+draw.plotNetwork(network, "Network with only friendships")
+
 for generation in range(1, generations+1):
     nw.computeRomanticRelationships(network)
 
-    if generation % step == 0:
+    if generation % step == 0 and generation != generations:
         print("\nNetwork after " + str(generation) +  " generations.")
         print(network)
         draw.plotNetwork(network, "Network after " + str(generation) + " generations of relationships",
@@ -41,8 +45,9 @@ for generation in range(1, generations+1):
         continue_sim = input("Continue the simulation? ")
         
     nw.computeBreakups(network)
+    nw.computeFriendships(network, sample_size = 20)
     
-print("Final network after " + str(generations) +  " generations.")
+print("\nFinal network after " + str(generations) +  " generations.")
 print(network)
 print(len(network.in_relation))
 draw.plotNetwork(network, "Final network after " + str(generations) + " generations of relationships")
