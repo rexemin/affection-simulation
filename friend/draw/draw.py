@@ -5,7 +5,7 @@ This module implements everything needed for plotting
 of a social network.
 
 Author: Ivan A. Moreno Soto
-Last updated: 27/March/2018
+Last updated: 28/March/2018
 """
 
 #-----------------------------------------------------------#
@@ -168,11 +168,11 @@ def plotNetwork(network, plot_title, width = 1000, height = 1000):
     data = Data([rom_edges_trace, friend_edges_trace,
                  male_nodes_trace, fem_nodes_trace])
     figure = Figure(data = data, layout = plot_layout)
-    py.plot(figure, filename = plot_title + '.html')
+    py.plot(figure, filename = plot_title.replace(' ', '') + '.html')
 
 #-----------------------------------------------------------#
 
-def plotCommunities(communities, title, width = 1000, height = 1000):
+def plotCommunities(communities, title, width = 1000, height = 1000, layer_offset = 200):
     """
     Plots in the same 3D scene all the communities of a graph.
 
@@ -180,14 +180,14 @@ def plotCommunities(communities, title, width = 1000, height = 1000):
     @param title: Title of the plot.
     @param width: Width in pixels of the plot.
     @param height: Height in pixels of the plot.
+    @param layer_offset: Offset in pixels for each layer of the plot. Each subgraph gets its own layer.
     """
     data = []
 
-    colors = ['#' + str(ri(0, 10)) + str(ri(0, 10)) + str(ri(0, 10)) +
-              str(ri(0, 10)) + str(ri(0, 10)) + str(ri(0, 10))
-              for i in range(len(communities))]
+    colors = ['#%02X%02X%02X' % (ri(0, 256), ri(0, 256), ri(0, 256))
+              for sub in range(len(communities))]
 
-    for sub, color in zip(communities, colors):
+    for sub, color, layer in zip(communities, colors, range(len(communities))):
         # We get the labels.
         labels = [n['info'].name + ', ' +
                   str(n['info'].attributes['age']) + ', ' +
@@ -200,7 +200,7 @@ def plotCommunities(communities, title, width = 1000, height = 1000):
         # For the nodes.
         node_x = [layout[k][0] for k in range(len(layout))]
         node_y = [layout[k][1] for k in range(len(layout))]
-        node_z = [layout[k][2] for k in range(len(layout))]
+        node_z = [layout[k][2] + (layer * layer_offset) for k in range(len(layout))]
 
         # For the edges.
         edges_x = []
@@ -212,7 +212,10 @@ def plotCommunities(communities, title, width = 1000, height = 1000):
 
             edges_x += [layout[e_v[0]][0], layout[e_v[1]][0], None]
             edges_y += [layout[e_v[0]][1], layout[e_v[1]][1], None]
-            edges_z += [layout[e_v[0]][2], layout[e_v[1]][2], None]
+            
+            edges_z += [layout[e_v[0]][2] + (layer * layer_offset),
+                        layout[e_v[1]][2] + (layer * layer_offset),
+                        None]
 
         # We make the scatters.
         node_trace = Scatter3d(x = node_x, y = node_y, z = node_z,
@@ -231,7 +234,6 @@ def plotCommunities(communities, title, width = 1000, height = 1000):
         
         data.append(node_trace)
         data.append(edges_trace)
-        
 
     # Options for the background of the plot.
     axis = dict(showbackground = False,
@@ -250,7 +252,7 @@ def plotCommunities(communities, title, width = 1000, height = 1000):
                     margin = Margin(t = 100),
                     hovermode = 'closest')
     figure = Figure(data = data, layout = plot_layout)
-    py.plot(figure, filename = title + '.html')
+    py.plot(figure, filename = title.replace(' ', '') + '.html')
 
 #-----------------------------------------------------------#
 

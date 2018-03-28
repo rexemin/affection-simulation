@@ -5,7 +5,7 @@ This module implements everything needed for plotting
 of a social network.
 
 Author: Ivan A. Moreno Soto
-Last updated: 27/March/2018
+Last updated: 28/March/2018
 """
 
 #-----------------------------------------------------------#
@@ -167,7 +167,7 @@ def plotNetwork(network, plot_title, width = 1000, height = 1000):
     data = Data([current_edges_trace, past_edges_trace,
                  male_nodes_trace, fem_nodes_trace])
     figure = Figure(data = data, layout = plot_layout)
-    py.plot(figure, filename = plot_title + '.html')
+    py.plot(figure, filename = plot_title.replace(' ', '') + '.html')
 
 #-----------------------------------------------------------#
 
