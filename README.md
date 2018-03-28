@@ -14,10 +14,10 @@ These modules require the following dependencies:
 - numpy
 - plotly
 
-After that is taken care of, you should be good to run the scripts. For now, only the `love` package is complete.
+After that is taken care of, you should be good to run the scripts.
 
 ## Run
-Run the `main.py` script inside the `love` package to run the simulation.
+Run the `main.py` script inside the `love` or `friend` packages to run the simulation.
 
 ### Simulación y visualización de redes sociales de afecto usando igraph y plotly en Python
 
@@ -33,7 +33,7 @@ Estos módulos requieren las siguientes dependencias:
 - numpy
 - plotly
 
-Después de eso, deberías poder ejecutar los scripts. Por ahora¸ solo el paquete `love` esta completo.
+Después de eso, deberías poder ejecutar los scripts.
 
 ## Ejecución
-Corre el script `main.py` dentro del paquete `love` para ejecutar la simulación.
+Corre el script `main.py` dentro del paquete `love` o `friend` para ejecutar la simulación.
