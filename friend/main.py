@@ -12,11 +12,12 @@ Last updated: 27/March/18
 
 import network.people as people
 import network.network as nw
+import network.analysis as analysis
 import draw.draw as draw
 
 #-----------------------------------------------------------#
 
-print("Simulation of social networks of lovers.")
+print("Simulation of social networks of lovers and friends.")
 names_file = input("Path of a database of names and sexes: ")
 society_size = int(input("Number of names to pull out of " + names_file + ": "))
 
@@ -51,6 +52,12 @@ print("\nFinal network after " + str(generations) +  " generations.")
 print(network)
 print(len(network.in_relation))
 draw.plotNetwork(network, "Final network after " + str(generations) + " generations of relationships")
+
+for algo, title in zip(('between', 'map', 'label'), ('Edge-betweenness', 'Infomap', 'Label propagation')):
+    print('Finding community structure using ' + title + '.')
+    communities = analysis.getCommunities(network.graph, algo)
+    draw.plotCommunities(communities, title)
+    continue_test = input('Continue with the next algorithm?')
 
 #-----------------------------------------------------------#
 

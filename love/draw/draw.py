@@ -167,7 +167,7 @@ def plotNetwork(network, plot_title, width = 1000, height = 1000):
     data = Data([current_edges_trace, past_edges_trace,
                  male_nodes_trace, fem_nodes_trace])
     figure = Figure(data = data, layout = plot_layout)
-    py.plot(figure)
+    py.plot(figure, filename = plot_title + '.html')
 
 #-----------------------------------------------------------#
 

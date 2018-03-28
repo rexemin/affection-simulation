@@ -11,6 +11,7 @@ Last updated: 27/March/2018
 #-----------------------------------------------------------#
 
 import igraph
+from numpy.random import randint as ri
 
 import plotly.offline as py
 from plotly.graph_objs import *
@@ -167,7 +168,89 @@ def plotNetwork(network, plot_title, width = 1000, height = 1000):
     data = Data([rom_edges_trace, friend_edges_trace,
                  male_nodes_trace, fem_nodes_trace])
     figure = Figure(data = data, layout = plot_layout)
-    py.plot(figure)
+    py.plot(figure, filename = plot_title + '.html')
+
+#-----------------------------------------------------------#
+
+def plotCommunities(communities, title, width = 1000, height = 1000):
+    """
+    Plots in the same 3D scene all the communities of a graph.
+
+    @param communities: Iterable object containing the subgraphs of a graph.
+    @param title: Title of the plot.
+    @param width: Width in pixels of the plot.
+    @param height: Height in pixels of the plot.
+    """
+    data = []
+
+    colors = ['#' + str(ri(0, 10)) + str(ri(0, 10)) + str(ri(0, 10)) +
+              str(ri(0, 10)) + str(ri(0, 10)) + str(ri(0, 10))
+              for i in range(len(communities))]
+
+    for sub, color in zip(communities, colors):
+        # We get the labels.
+        labels = [n['info'].name + ', ' +
+                  str(n['info'].attributes['age']) + ', ' +
+                  active_attr['orientation'][n['info'].attributes['orientation']]
+                  for n in sub.vs]
+
+        # We get the layout and make the data for the scatters.
+        layout = sub.layout('kk_3d')
+
+        # For the nodes.
+        node_x = [layout[k][0] for k in range(len(layout))]
+        node_y = [layout[k][1] for k in range(len(layout))]
+        node_z = [layout[k][2] for k in range(len(layout))]
+
+        # For the edges.
+        edges_x = []
+        edges_y = []
+        edges_z = []
+
+        for e in sub.es:
+            e_v = e.tuple
+
+            edges_x += [layout[e_v[0]][0], layout[e_v[1]][0], None]
+            edges_y += [layout[e_v[0]][1], layout[e_v[1]][1], None]
+            edges_z += [layout[e_v[0]][2], layout[e_v[1]][2], None]
+
+        # We make the scatters.
+        node_trace = Scatter3d(x = node_x, y = node_y, z = node_z,
+                               mode = 'markers',
+                               name = 'nodes',
+                               marker = Marker(symbol = 'dot', size = 5, color = color,
+                                               line = Line(color = 'rgb(0, 0, 0)', width = 0.5)),
+                               text = labels,
+                               hoverinfo = 'text')
+
+        edges_trace = Scatter3d(x = edges_x, y = edges_y, z = edges_z,
+                                mode = 'lines',
+                                name = 'edges',
+                                line = Line(color='rgb(25, 25, 25)', width = 5),
+                                hoverinfo = 'none')
+        
+        data.append(node_trace)
+        data.append(edges_trace)
+        
+
+    # Options for the background of the plot.
+    axis = dict(showbackground = False,
+                showline = False,
+                zeroline = False,
+                showgrid = False,
+                showticklabels = False,
+                title = '')
+
+    # Characteristics of the plot.
+    plot_layout = Layout(title = title,
+                    font = Font(size = 14),
+                    showlegend = False,
+                    width = width, height = height,
+                    scene = Scene(xaxis = XAxis(axis), yaxis = YAxis(axis), zaxis = ZAxis(axis)),
+                    margin = Margin(t = 100),
+                    hovermode = 'closest')
+    figure = Figure(data = data, layout = plot_layout)
+    py.plot(figure, filename = title + '.html')
 
 #-----------------------------------------------------------#
 
